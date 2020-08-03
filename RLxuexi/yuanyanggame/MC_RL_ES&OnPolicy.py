@@ -108,7 +108,9 @@ class MC_RL:
         return self.Qvalue
         
     def MC_RL_OnPolicy(self, num_traj, epsilon):
+        #与MC_ES 分幕式策略迭代不同的是，在每幕选取动作时策略是一个概率型的，相同的是它们都是同轨策略
         # TODO 补全同轨策略MC控制方法
+        
         pass
         
     def mc_test(self):
