@@ -117,13 +117,13 @@ class MC_RL:
         # 用来测试使用当前的Q表格贪婪选取动作后是否能找到雌鸟
         # 返回flag表示是否找到
         # 注意！测试中起点人需要在下面人为指定，这里认为起点就是0状态
-        s_start=0  # 测试起点
+        s=0  # 测试起点
         flag=0  # 是否通过测试的标志位
         step=0  # 步数计数器
         done=False  # 是否继续步进的控制位，如果找到雌鸟或者撞墙就不再步进
         while done == False and step < 30:
-            a=self.greedy_policy(self.Qvalue, s_start)  # 依据Q表格，贪婪策略选取下一个动作
-            s_next, r, done=self.yuanyang.transform(s_start, a)
+            a=self.greedy_policy(self.Qvalue, s)  # 依据Q表格，贪婪策略选取下一个动作
+            s_next, r, done=self.yuanyang.transform(s, a)
             s=s_next
             step += 1
             # 使用yuanyang类中find方法判断
