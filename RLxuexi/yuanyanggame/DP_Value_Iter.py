@@ -70,6 +70,7 @@ if __name__=="__main__":
         print("在第"+str(s)+"格执行动作"+str(a))
         yuanyang.bird_male_position=yuanyang.state_to_position(s)
         yuanyang.render()
+        #TODO为什么我加入time.sleep(?)方法就报错
         step_num+=1
         s_next,r,t=yuanyang.transform(s,a)
         if t==True or step_num>20:

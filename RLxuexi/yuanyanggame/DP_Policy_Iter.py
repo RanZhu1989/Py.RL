@@ -7,10 +7,10 @@ class DP_Policy_Iter:
         #初始化时需要传入yuanyang游戏环境
         #初始化值函数v
         #用字典储存策略
-        #yuanyang=YuanYangEnv()#FIXME最后删除这行
+        #yuanyang=YuanYangEnv()
         self.states=yuanyang.states
         self.actions=yuanyang.actions
-        self.v=[0.0 for i in range(len(self.states)+1)]#列表解析，当i访问到range中对象时，生成一个0.0
+        self.v=[0.0 for i in range(len(self.states))]#列表解析，当i访问到range中对象时，生成一个0.0
         self.pi=dict()
         self.gamma=yuanyang.gamma
         #初始化策略,当状态不是终止态时，随机化初始动作
@@ -33,7 +33,7 @@ class DP_Policy_Iter:
         #策略评估
         #与游戏世界交互中沿着决策树更新值函数
         #在这个格子世界游戏中，策略会指导在每个状态只会做出一个动作，所以策略评估公式中去掉求期望形式，直接通过次数迭代即可
-        #yuanyang=YuanYangEnv()#FIXME最后删除这行
+        #yuanyang=YuanYangEnv()#
         for i in range(100):
             delta=0.0#一轮迭代结束后总累计误差
             for state in self.states:
@@ -50,7 +50,7 @@ class DP_Policy_Iter:
                 self.v[state]=new_v#更新值函数
                 pass
             if delta<1e-6:
-                print("策略评估结束，总迭代轮数为："+str(i)+" 次！")
+                print("****策略评估已迭代："+str(i)+" 次****")
                 break
             pass
         pass
@@ -58,7 +58,7 @@ class DP_Policy_Iter:
     def Policy_Improve(self):
         #策略改进
         #与游戏世界交互在状态下尝试各种动作，以最大化动作后值函数为目的改进原策略pi
-        #yuanyang=YuanYangEnv()#FIXME最后删除这行
+        #yuanyang=YuanYangEnv()#
         #对状态进行遍历，终止态不处理
         #确定性策略，直接找使下个状态估计价值最大的动作
         for state in self.states:
@@ -98,7 +98,8 @@ class DP_Policy_Iter:
                 break
             pass
         pass
-
+    pass
+#------------测试脚本---------------
 if __name__=="__main__":
     #在yuanyang环境下测试训练效果，画出路径，打印值函数
     #起点随机
@@ -134,7 +135,7 @@ if __name__=="__main__":
     #补上转移但不渲染的渲染步骤
     yuanyang.bird_male_position=yuanyang.state_to_position(s)
     #补上路径
-    path.append(s)
+    yuanyang.path.append(s)
     #渲染
     yuanyang.render()
     while True:

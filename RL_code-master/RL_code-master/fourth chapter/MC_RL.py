@@ -121,6 +121,7 @@ class MC_RL:
                     r = -2
                 # 存储数据，采样数据
                 s_sample.append(s)
+                #print(s_sample)
                 r_sample.append(r)
                 a_sample.append(a_num)
                 step_num += 1

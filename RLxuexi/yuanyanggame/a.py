@@ -1,7 +1,5 @@
-from yuanyang import YuanYangEnv
+from MC_yuanyang import YuanYangEnv
 import random
-yuanyang=YuanYangEnv()
-s=111
-flag=yuanyang.collide(yuanyang.state_to_position(s))
-print(yuanyang.state_to_position(s))
-print(flag)
+import numpy as np
+for a in range(9, -1, -1):
+    print(a)
