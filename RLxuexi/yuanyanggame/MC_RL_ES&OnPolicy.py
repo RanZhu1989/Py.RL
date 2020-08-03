@@ -68,18 +68,18 @@ class MC_RL:
             while done == False and step_num < 30:
                 # 开始生成一条轨迹，轨迹终止条件是用yuanyang的transform方法返回标志位碰撞或找到，另外步数过多也会强行停止
                 # 首先与环境交互
-                # S0->A0-> S1+R1 ->A1-> S2+R2 ... ->ST-1+RT-1 最终大奖励 /->AT ->ST RT=0 终止
+                # S0->A0-> S1+R1 ->A1-> S2+R2 ... ->ST-1+RT-1  ->AT ->ST + RT 终止
                 #ST是第一次撞墙或找到 这两种情况下的状态
                 s_next, r, done = self.yuanyang.transform(s, a)
                 a_number = self.action_to_num(a)
                 # 为防止智能体往回走，加一个往回走更大惩罚
                 if s_next in s_sample:
-                    r = -4
+                    r = -2
                     pass
                 # 存储经验
-                s_sample.append(s)
-                a_sample.append(a_number)
-                r_sample.append(r)
+                s_sample.append(s) #S0~ST-1 T个状态 没有记录最终状态
+                a_sample.append(a_number) #A0~AT-1 T个动作 同样也没有最终状态的动作
+                r_sample.append(r) #R1~RT T个即时奖励 对应S1~ST状态下获得的
                 #print(r_sample)#FIXME测试用
                 step_num += 1
                 s = s_next
@@ -91,9 +91,9 @@ class MC_RL:
                 pass
             # 试验结束后再价值迭代：Q_new=Q_old + 1\N *(G_new - Q_old)
             # G(s)=r + gamma* G(s')
-            # 从倒数第二个状态，也就是最后一个有奖励状态的G，可以很方便向前按步推出轨迹中所有状态的G，这样不要把每个G(S)算一遍存起来。
-            # 
-            g = r_sample[-1]
+            # 计算终态ST-1的G值，由于达到终态后不转移，所以它后续无奖励
+            #ST-1的G值实际就是Q(ST-1,AT-1) S,A分别对应于S,A最后一个采样
+            g = self.Qvalue[s_sample[-1],a_sample[-1]]
             for i in range(len(s_sample)-1, -1, -1):
                 # G(s)=r + gamma* G(s')
                 g= (self.yuanyang.gamma) * g + r_sample[i]
@@ -129,16 +129,37 @@ class MC_RL:
             # 使用yuanyang类中find方法判断
             if self.yuanyang.find(self.yuanyang.state_to_position(s)) == 1:
                 flag=1
-                pass
+                break
             pass
         return flag
-    pass
+    
 if __name__=="__main__":
-    traj_number_es=100000
+    traj_number_es=10000
     yuanyang=YuanYangEnv()
     train_ES=MC_RL(yuanyang)
     train_ES.MC_learning_ES(traj_number_es)
     yuanyang.Qtable=train_ES.Qvalue
+    #画出MC_ES方法的路径
+    flag=1
+    path=[]
+    step_num=0
+    s=yuanyang.reset()
+    while flag==1:
+        path.append(s)
+        yuanyang.path=path
+        a=train_ES.greedy_policy(train_ES.Qvalue,s)
+        yuanyang.bird_male_position=yuanyang.state_to_position(s)
+        yuanyang.render()
+        step_num+=1
+        next_s,r,t=yuanyang.transform(s,a) 
+        s=next_s
+        if t==1 or step_num>30:
+            flag=0
+            pass
+        pass
+    path.append(s)
+    yuanyang.bird_male_position=yuanyang.state_to_position(s)
+    yuanyang.render()
     while True:
         yuanyang.render()
     pass
