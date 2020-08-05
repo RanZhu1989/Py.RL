@@ -7,7 +7,10 @@ class MC_RL:
     # 用于完成以下两个试验：
     # 1.试探性出发条件下首次访问型确定性的贪婪策略的“分幕式”策略迭代方法  （因为还是先预计该幕的Q表，然后再根据Q表选动作）
     # 2.同轨策略的MC控制方法，软策略，依然是一种“分幕式”策略迭代
-
+    """ ！！！原书中Q表更新是从前往后算，在Epsilon-贪婪策略中，因为试验次数有限，这样轨迹前面的值很好，
+         后面的值不准。我这里是从后往前算，这样后面的值很好!!!
+        在这个蒙特卡洛方法程序里。如果雄鸟出生点在格子偏右位置，就能正常工作，如果在靠前位置则不能"""
+    """!!!为了加速训练，我把撞墙惩罚设置为-100，因为原先-10与走多次的-2相比太小了!!!"""
     def __init__(self, yuanyang):
         self.Qvalue = np.zeros((len(yuanyang.states), len(yuanyang.actions)))*0.1  # 为什么要乘以0.1
         # 这是存放次数，为何初始次数不是0?因为避免除以0
@@ -15,7 +18,7 @@ class MC_RL:
         self.actions = yuanyang.actions
         self.states = yuanyang.states
         self.gamma = yuanyang.gamma
-        self.yuanyang = yuanyang  # 为后面的方法省一个参数传递
+        self.yuanyang=yuanyang
         pass
 
     def greedy_policy(self, q, s):
@@ -29,7 +32,7 @@ class MC_RL:
         if np.random.uniform() < 1-epsilon:  # np包下random字库 uniform(low,high,size)产生low起始，high结束，size形状均匀分布
             return self.actions[a_max]
         else:
-            return self.action[int(random.random(len(self.actions)))]
+            return self.actions[int(random.random()*len(self.actions))]
         pass
 
     def action_to_num(self, a):
@@ -60,27 +63,22 @@ class MC_RL:
             a = self.actions[int(random.random()*len(self.actions))]
             done = False
             step_num = 0  # 记录步数
-            if self.mc_test() == 1:
-                # self.mc_test用来判断目前的策略是否能找到雌鸟，利用Q表格选取动作然后仿真检验
-                print("经过"+str(traj)+"条试探性出发的轨迹后，策略成功！")
-                break
-            # 下面进行试验
+            # if self.mc_test() == 1:
+            #     # self.mc_test用来判断目前的策略是否能找到雌鸟，利用Q表格选取动作然后仿真检验
+            #     print("经过"+str(traj)+"条试探性出发的轨迹后，测试从指定起点出发的策略成功！")
+            #     break
+            # 下面产生轨迹
             while done == False and step_num < 30:
                 # 开始生成一条轨迹，轨迹终止条件是用yuanyang的transform方法返回标志位碰撞或找到，另外步数过多也会强行停止
-                # 首先与环境交互
-                # S0->A0-> S1+R1 ->A1-> S2+R2 ... ->ST-1+RT-1  ->AT ->ST + RT 终止
-                #ST是第一次撞墙或找到 这两种情况下的状态
+                # 轨迹说明：
+                # (S_0)-->A_0-->(S_1,R_1)-->A_1-->(S_2,R_2)... (临界S_T-1,R_T-1) -->A_T-1-->(R_T,      S_T撞)
+                # |-----------------SAVE to SAMPLE------------------------------------------------|-- s=s_next
                 s_next, r, done = self.yuanyang.transform(s, a)
                 a_number = self.action_to_num(a)
-                # 为防止智能体往回走，加一个往回走更大惩罚
-                if s_next in s_sample:
-                    r = -2
-                    pass
                 # 存储经验
                 s_sample.append(s) #S0~ST-1 T个状态 没有记录最终状态
-                a_sample.append(a_number) #A0~AT-1 T个动作 同样也没有最终状态的动作
-                r_sample.append(r) #R1~RT T个即时奖励 对应S1~ST状态下获得的
-                #print(r_sample)#FIXME测试用
+                a_sample.append(a_number) #A0~AT-1 T个动作 最后一个动作将状态驱动到S_T
+                r_sample.append(r) #R1~RT T个延迟奖励 对应S0~ST-1状态下获得的
                 step_num += 1
                 s = s_next
                 # 这里动作选取依据的是贪婪策略，尽量“同轨”，注意由于贪婪策略函数没有对存在多个相同最大值情况考虑，
@@ -91,15 +89,12 @@ class MC_RL:
                 pass
             # 试验结束后再价值迭代：Q_new=Q_old + 1\N *(G_new - Q_old)
             # G(s)=r + gamma* G(s')
-            # 计算终态ST-1的G值，由于达到终态后不转移，所以它后续无奖励
-            #ST-1的G值实际就是Q(ST-1,AT-1) S,A分别对应于S,A最后一个采样
-            g = self.Qvalue[s_sample[-1],a_sample[-1]]
+            g = 0
+            #g=self.Qvalue[s,self.action_to_num(a)]
             for i in range(len(s_sample)-1, -1, -1):
                 # G(s)=r + gamma* G(s')
                 g= (self.yuanyang.gamma) * g + r_sample[i]
-                # 从倒数第二个时间开始
-                # 用时间下标可以对应取到动作，而直接遍历元素则不行
-                self.n[s_sample[i], a_sample[i]] += 1.0  # 统计各类二元组出现的次数，注意这个是在不同轨迹之间累计的
+                self.n[s_sample[i], a_sample[i]] += 1.0 
                 # Q_new=Q_old + 1\N *(G_new - Q_old)
                 self.Qvalue[s_sample[i], a_sample[i]] = self.Qvalue[s_sample[i], a_sample[i]] \
                     + (1 / (self.n[s_sample[i], a_sample[i]])) * (g-self.Qvalue[s_sample[i], a_sample[i]])
@@ -108,11 +103,63 @@ class MC_RL:
         return self.Qvalue
         
     def MC_RL_OnPolicy(self, num_traj, epsilon):
-        #与MC_ES 分幕式策略迭代不同的是，在每幕选取动作时策略是一个概率型的，相同的是它们都是同轨策略
-        # TODO 补全同轨策略MC控制方法
+        #与MC_ES 分幕式策略迭代不同的是，轨迹都是从固定的初态开始在每幕选取动作时策略是一个概率型的
+        # 相同的是它们都是同轨策略
+        # 没有单独编制测试环节，测试融合在同轨策略实施过程中了
+        #输入：用于学习的生成轨迹的次数、探索率epsilon
+        #返回：Q表
+        self.Qvalue = np.zeros((len(self.yuanyang.states), len(self.yuanyang.actions)))*0.1
+        self.n = np.ones((len(self.yuanyang.states),len(self.yuanyang.actions)))*0.001
         
+        for traj in range(num_traj):
+            #和前面一样，取多条轨迹
+            s_sample = []
+            a_sample = []
+            r_sample = []
+            done=False
+            step_num=0
+            s=0 #固定初始状态
+            #s=self.yuanyang.reset()#设定一个随机的初始状态
+            #epsilon需要更新吗？
+            #epsilon=epsilon*np.exp(-num_traj/1000)
+                # 开始生成一条轨迹，轨迹终止条件是用yuanyang的transform方法返回标志位碰撞或找到，另外步数过多也会强行停止
+                # 轨迹说明：
+                # (S_0)-->A_0-->(S_1,R_1)-->A_1-->(S_2,R_2)... (临界S_T-1,R_T-1) -->A_T-1-->(R_T,      S_T撞)
+                # |-----------------SAVE to SAMPLE------------------------------------------------|-- s=s_next
+            while done==False and step_num<30:
+                a=self.epsilon_greedy_policy(self.Qvalue,s,epsilon)
+                s_next,r,done=self.yuanyang.transform(s,a)
+                a_num=self.action_to_num(a)
+                s_sample.append(s)
+                a_sample.append(a_num)
+                """ if s_next in s_sample:
+                    r+=-2*s_sample.count(s_next)#这里想用一个“惩罚加深”来限制往回走
+                    pass """
+                r_sample.append(r)
+                s=s_next
+                """ if self.yuanyang.find(self.yuanyang.state_to_position(s))==1:
+                    print("在第"+str(traj)+"次轨迹生成过程中达成了目标")
+                    pass """
+                step_num+=1
+                pass
+                #上面轨迹生成结束后，检查最后一个状态（其实未转移，只是记录）
+            #该轨迹（幕）结束后才进行Q表估计和策略改善，和上面过程类似
+            g=0
+            
+            for i in range(len(s_sample)-1, -1, -1):
+                # G(s)=r + gamma* G(s')
+                g= (self.yuanyang.gamma) * g + r_sample[i]
+                # 从T-1时间开始
+                # 用时间下标可以对应取到动作，而直接遍历元素则不行
+
+                self.n[s_sample[i], a_sample[i]] += 1.0  # 统计各类二元组出现的次数，注意这个是在不同轨迹之间累计的
+                # Q_new=Q_old + 1\N *(G_new - Q_old)
+                self.Qvalue[s_sample[i], a_sample[i]] = self.Qvalue[s_sample[i], a_sample[i]] \
+                    + (1 / (self.n[s_sample[i], a_sample[i]])) * (g-self.Qvalue[s_sample[i], a_sample[i]])
+                pass
+            pass
+        return self.Qvalue
         pass
-        
     def mc_test(self):
         # 用来测试使用当前的Q表格贪婪选取动作后是否能找到雌鸟
         # 返回flag表示是否找到
@@ -132,7 +179,8 @@ class MC_RL:
                 break
             pass
         return flag
-    
+
+#这是用来测试MC-ES的代码    
 if __name__=="__main__":
     traj_number_es=10000
     yuanyang=YuanYangEnv()

@@ -1,8 +1,41 @@
 {
-    "python.pythonPath": "D:\\anaconda3\\python.exe"
+    "python.pythonPath": "d:\\anaconda3\\python.exe",
     "code-runner.executorMap": {
         
         "python": "D:\\anaconda3\\python.exe",
         
-    }
+    },
+    "python.terminal.activateEnvironment": false,
+    "python.analysis.cacheFolderPath": "D:\\anaconda3\\Lib\\__pycache__",
+    "vsintellicode.java.completionsEnabled": false,
+    "cSpell.enableFiletypes": [
+        "!asciidoc",
+        "!c",
+        "!cpp",
+        "!csharp",
+        "!css",
+        "!git-commit",
+        "!go",
+        "!handlebars",
+        "!haskell",
+        "!html",
+        "!jade",
+        "!java",
+        "!javascript",
+        "!javascriptreact",
+        "!less",
+        "!matlab",
+        "!php",
+        "!plaintext",
+        "!pug",
+        "!restructuredtext",
+        "!rust",
+        "!scala",
+        "!typescript",
+        "!typescriptreact",
+        "!yaml",
+        "!yml"
+    ],
+    "cSpell.language": "en,en-US",
+    "editor.codeActionsOnSave": null
 }

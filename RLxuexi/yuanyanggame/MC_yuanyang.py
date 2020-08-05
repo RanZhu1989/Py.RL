@@ -178,7 +178,7 @@ class YuanYangEnv:
         flag_find=self.find(next_position)
         #下一状态为碰撞 奖励-10，下一状态为找到，奖励为10，没找到没碰撞，奖励-2
         if (flag_collide==1):
-            return self.position_to_state(current_position),-10,True
+            return self.position_to_state(current_position),-100,True
         if (flag_find==1):
             return self.position_to_state(next_position),10,True
         #下一状态为普通状态，奖励为-2
