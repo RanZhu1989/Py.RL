@@ -12,7 +12,7 @@ path=[]
 step_num=0
 #s=yuanyang.reset()
 s=0
-while flag==1:
+while flag==0:
     path.append(s)
     yuanyang.path=path
     a=train_EpsilonGonPolicy.epsilon_greedy_policy(train_EpsilonGonPolicy.Qvalue,s,epsilon)
