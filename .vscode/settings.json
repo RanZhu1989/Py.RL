@@ -1,12 +1,12 @@
 {
-    "python.pythonPath": "d:\\anaconda3\\python.exe",
+    "python.pythonPath": "D:\\miniconda3\\python.exe",
     "code-runner.executorMap": {
         
-        "python": "D:\\anaconda3\\python.exe",
+        "python": "D:\\miniconda3\\python.exe",
         
     },
     "python.terminal.activateEnvironment": false,
-    "python.analysis.cacheFolderPath": "D:\\anaconda3\\Lib\\__pycache__",
+    "python.analysis.cacheFolderPath": "D:\\miniconda3\\Lib\\__pycache__",
     "vsintellicode.java.completionsEnabled": false,
     "cSpell.enableFiletypes": [
         "!asciidoc",
