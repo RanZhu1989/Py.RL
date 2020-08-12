@@ -221,8 +221,7 @@ if __name__=="__main__":
     grid=GridWindEnv()
     s=36
     a='N'
-    s_next,s_temp,r,t=grid.transform(s,a)
-    print(s_temp)
+    s_next,r,t=grid.transform(s,a)
     print(s_next)
     print(r)
     print(t)
